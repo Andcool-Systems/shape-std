@@ -1,0 +1,34 @@
+import os
+import aiohttp
+import orjson
+
+class ApiManager:
+    def __init__(self):
+        self.headers = {
+            'shape-bot-token': os.getenv('SHAPE_TOKEN'),
+            'network-id': 'TG'
+        }
+
+    async def send_request(self, url: str, user_id: int, body: any = None, method='GET'):
+        headers = self.headers.copy()
+        headers['user-id'] = str(user_id)
+        async with aiohttp.ClientSession(os.getenv('API_URL')) as session:
+            match (method):
+                case 'GET':
+                    async with session.get(url, headers=headers) as response:
+                        if response.status // 100 in [4, 5]:
+                            return None, response.status
+                        response_data = await response.json()
+                        return response_data, response.status
+                case 'POST':
+                    async with session.post(url, headers=headers, data=orjson.dumps(body)) as response:
+                        if response.status // 100 in [4, 5]:
+                            return None, response.status
+                        response_data = await response.json()
+                        return response_data, response.status
+                case 'PATCH':
+                    async with session.patch(url, headers=headers, data=orjson.dumps(body)) as response:
+                        if response.status // 100 in [4, 5]:
+                            return None, response.status
+                        response_data = await response.json()
+                        return response_data, response.status
