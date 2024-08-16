@@ -14,7 +14,7 @@ class ApiManager:
         headers['user-id'] = str(user_id)
         try:
             async with aiohttp.ClientSession(os.getenv('API_URL')) as session:
-                match (method):
+                match method:
                     case 'GET':
                         async with session.get(url, headers=headers) as response:
                             if response.status // 100 in [4, 5]:
