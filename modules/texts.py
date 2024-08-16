@@ -8,6 +8,6 @@ def buildStartText(name: str) -> str:
 
 
 def buildProductText(product: ProductType) -> str:
-    return f'{product.title} — {product.price}{product.nominal_id}\n' + \
+    return f'{product.title} — {product.price}₽\n' + \
            f'🏷 Скидка: {product.discount}%\n\n' + \
            product.description

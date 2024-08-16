@@ -68,19 +68,6 @@ async def orders(callback: types.CallbackQuery):
         pass  # something
 
 
-@dp.message(F.document)
-async def handle_file(message: types.Message):
-    file_id = message.photo[-1].file_id if message.photo else message.document.file_id
-
-    # Получаем объект File
-    file = await bot.get_file(file_id)
-    
-    # Генерируем URL для загрузки файла
-    download_url = f'https://api.telegram.org/file/bot{TOKEN}/{file.file_path}'
-    
-    await message.answer(f"File URL: {download_url}")
-
-
 async def start_bot():
     """Асинхронная функция для запуска диспатчера"""
 
