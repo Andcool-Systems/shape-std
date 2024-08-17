@@ -16,3 +16,4 @@ def buildStartKeyboard(more: bool = False) -> InlineKeyboardBuilder:
 def buildProductKeyboard(product_id: int) -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="📦 Заказать", callback_data=f'orderProduct_{product_id}'))
+    return builder.as_markup()

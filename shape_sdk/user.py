@@ -20,10 +20,9 @@ async def setEmail(user_id: int, email: str) -> bool:
 
 async def createUser(user_id: int, first_name: str, last_name: str) -> bool:
     body = {
-        'vkid': user_id,
         'first_name': first_name,
-        'last_name': last_name,
-        'bot_auth_key': os.getenv('SHAPE_TOKEN')
+        'last_name': last_name
     }
-    _, status = await apiManager.send_request('/bot/users', user_id, body=body, method='POST')
-    return status == 200
+    res, status = await apiManager.send_request('/bot/users/create', user_id, body=body, method='POST')
+    print(res)
+    return status

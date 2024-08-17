@@ -1,5 +1,9 @@
+from typing import List
+from shape_sdk.products import ProductType
+
 class OrderType:
-    def __init__(self, 
+    def __init__(self,
+                 products: List[ProductType],
                  id: int,
                  product_id: int,
                  executor_id: int | None,
@@ -22,6 +26,11 @@ class OrderType:
         self.start_time: str = start_time
         self.send_time: str = send_time
         self.confirm_time: str = confirm_time
+        self.product: ProductType = None
+        for product in products:
+            if product.id == self.product_id:
+                self.product = product
+                break
 
 
 class OrderResultType:
