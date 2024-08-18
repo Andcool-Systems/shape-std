@@ -21,10 +21,23 @@ TOKEN=os.getenv('TOKEN')
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+
 class States(StatesGroup):
     """Стейты для aiogram"""
     active_order = State()
     params_waiting = State()
+
+
+async def clearTemp(state: FSMContext):
+    messages = (await state.get_data()).get('temporary_messages', None)
+    if not messages:
+        return
+    for message in messages:
+        try:
+            await message.delete()
+        except Exception:
+            ...
+    await state.update_data(temporary_messages=None)
 
 
 @dp.message(Command("start"))
@@ -54,46 +67,54 @@ async def more(callback: types.CallbackQuery):
 
 
 @dp.callback_query(F.data == 'catalog')
-async def catalog(callback: types.CallbackQuery):
+async def catalog(callback: types.CallbackQuery, state: FSMContext):
     products = await shape_sdk.products.getProducts(callback.from_user.id)
-    await callback.answer()
+    await clearTemp(state)
 
     if not products:
-        await callback.message.answer(text='⚠️ Не удалось получить каталог товаров!')
+        await callback.answer(text='⚠️ Не удалось получить каталог товаров!')
         return
     
+    await callback.answer()
+    temporary_messages = []
     for product in products:
-        await callback.message.answer(text=texts.buildProductText(product),
-                                      reply_markup=keyboards.buildProductKeyboard(product.id))
+        temporary_messages.append(await callback.message.answer(text=texts.buildProductText(product),
+                                      reply_markup=keyboards.buildProductKeyboard(product.id)))
+    await state.update_data(temporary_messages=temporary_messages)
         
 
 @dp.callback_query(F.data == 'my_orders')
-async def orders(callback: types.CallbackQuery):
+async def orders(callback: types.CallbackQuery, state: FSMContext):
     orders = await shape_sdk.orders.getOrders(callback.from_user.id)
-    await callback.answer()
+    await clearTemp(state)
+        
+    if orders == None:
+        await callback.answer(text='⚠️ Не удалось получить список заказов!')
+        return
     
     if len(orders) == 0:
-        await callback.message.answer(text='У вас еще нет заказов')
-        return
-        
-    if not orders:
-        await callback.message.answer(text='⚠️ Не удалось получить список заказов!')
+        await callback.answer(text='У вас еще нет заказов')
         return
     
+    await callback.answer()
+    temporary_messages = []
     for order in sorted(orders, key=lambda order: order.id):
-        await callback.message.answer(text=texts.buildOrderText(order))
+        temporary_messages.append(await callback.message.answer(text=texts.buildOrderText(order)))
+    await state.update_data(temporary_messages=temporary_messages)
 
 
 @dp.callback_query(F.data.startswith("orderProduct_"))
 async def orderProduct(callback: types.CallbackQuery, state: FSMContext):
     product_id = callback.data.replace("orderProduct_", "")
     _session: OrderSession | None = (await state.get_data()).get('session', None)
+    await clearTemp(state)
 
     if _session:
-        await callback.answer('У Вас есть незавершённый заказ. Завершите оформление всех заказов, прежде чем начать новый.')
+        await callback.answer(text='У Вас есть незавершённый заказ. Завершите оформление всех заказов, прежде чем начать новый.')
         return
     
-    await state.update_data(session=OrderSession(product_id))
+    order_message = await callback.message.answer('*Окно для заказа*')
+    await state.update_data(order_message=order_message, session=OrderSession(product_id))
 
 
 async def start_bot():

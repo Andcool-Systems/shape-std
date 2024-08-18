@@ -23,6 +23,5 @@ async def createUser(user_id: int, first_name: str, last_name: str) -> bool:
         'first_name': first_name,
         'last_name': last_name
     }
-    res, status = await apiManager.send_request('/bot/users/create', user_id, body=body, method='POST')
-    print(res)
+    _, status = await apiManager.send_request('/bot/users/create', user_id, body=body, method='POST')
     return status

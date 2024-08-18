@@ -19,15 +19,15 @@ class ApiManager:
                     case 'GET':
                         async with session.get(url, headers=headers) as response:
                             response_data = await response.json()
-                            return response_data, response.status
                     case 'POST':
                         async with session.post(url, headers=headers, data=orjson.dumps(body)) as response:
                             response_data = await response.json()
-                            return response_data, response.status
                     case 'PATCH':
                         async with session.patch(url, headers=headers, data=orjson.dumps(body)) as response:
                             response_data = await response.json()
-                            return response_data, response.status
+                if response.status // 100 in [4, 5]:
+                    print(response_data)
+                return response_data, response.status
         except Exception as e:
             print('API exception has ocurred:', e)
             return None, 502

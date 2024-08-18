@@ -1,6 +1,6 @@
 from . import api_manager
 from .types.corrections_type import CorrectionType
-from .types.order_type import OrderType
+from .types.order_type import OrderType, OrderResultType
 from typing import List
 from .products import getProducts
 
@@ -72,3 +72,11 @@ async def correctionHandler(user_id: int, correction_id: int) -> CorrectionType 
         return None
     
     return CorrectionType(**body)
+
+
+async def getResult(user_id: int, order_id: int) -> OrderResultType | None:
+    body, status = await apiManager.send_request(f'/bot/orders/{order_id}/result', user_id)
+    if status != 200:
+        return None
+    
+    return list(map(lambda order: OrderResultType(**order), body))
