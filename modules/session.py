@@ -1,8 +1,10 @@
-from typing import List
+from typing import Dict, List
 
 
 class OrderSession:
-    def __init__(self, product_id: str):
-        self.descriptions: str = ''
+    def __init__(self, id: int, nominal_id: str):
+        self.descriptions: List[str] = []
+        self.parameters: List[Dict[str, str]] = []
         self.attachments: List[str] = []
-        self.product_id: str = product_id
+        self.product_id: str = id
+        self.nominal_id = nominal_id

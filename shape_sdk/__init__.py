@@ -9,4 +9,5 @@ from .types.user_type import UserType
 from .types.product_type import ProductType
 from .types.corrections_type import CorrectionType
 from .types.order_type import OrderResultType, OrderType
+from .types.payments import PaymentHandler
 

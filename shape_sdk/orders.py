@@ -1,3 +1,4 @@
+from shape_sdk.types.payments import PaymentHandler
 from . import api_manager
 from .types.corrections_type import CorrectionType
 from .types.order_type import OrderType, OrderResultType
@@ -25,10 +26,11 @@ async def confirmOrder(user_id: int, order_id: str) -> int:
 
 async def getOrder(user_id: int, order_id: str) -> OrderType | None: 
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}', user_id)
-    if status != 200:
+    products = await getProducts(user_id)
+    if status != 200 or not products:
         return None
     
-    return OrderType(**body)
+    return OrderType(products, **body)
 
 
 async def getOrders(user_id: int) -> List[OrderType] | None: 
@@ -37,7 +39,7 @@ async def getOrders(user_id: int) -> List[OrderType] | None:
     if status != 200 or not products:
         return None
 
-    return list(map(lambda order: OrderType(products, **order), body))
+    return sorted(list(map(lambda order: OrderType(products, **order), body)), key=lambda order: order.id)
 
 
 async def getCorrections(user_id: int, order_id: int) -> List[CorrectionType] | None:
@@ -80,3 +82,19 @@ async def getResult(user_id: int, order_id: int) -> OrderResultType | None:
         return None
     
     return list(map(lambda order: OrderResultType(**order), body))
+
+
+async def createPayment(user_id: int, order_id: int) -> PaymentHandler | None:
+    body, status = await apiManager.send_request(f'/bot/orders/{order_id}/payment/create', user_id)
+    if status != 200:
+        return None
+    
+    return PaymentHandler(**body)
+
+
+async def checkPayment(user_id: int, order_id: int) -> OrderType | None:
+    body, status = await apiManager.send_request(f'/bot/orders/{order_id}/payment/check', user_id)
+    if status != 200:
+        return None
+    
+    return OrderType(**body)
