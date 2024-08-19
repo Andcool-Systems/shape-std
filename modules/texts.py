@@ -59,7 +59,7 @@ def buildOrderText(order: OrderType) -> str:
 
 
 def buildOrderTextMore(order: OrderType) -> str:
-    created_at = datetime.fromisoformat(order.created_at).timestamp()
+    created_at = datetime.fromisoformat(order.created_at).timestamp() + 10_800
     return f'Заказ #{order.id} — {order.product.title}\n\n' + \
            f'Статус: *{state_str[order.status]}*\n' + \
            f'Товар: *{order.product.title}*\n' + \

@@ -64,17 +64,19 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 @dp.callback_query(F.data == 'catalog')
 async def catalog(callback: types.CallbackQuery):
+    products = await shape_sdk.products.getProducts(callback.from_user.id)
     await callback.message.edit_caption(caption="Каталог 📚",
                                         parse_mode="Markdown",
-                                        reply_markup=keyboards.buildProductsMain()
+                                        reply_markup=keyboards.buildProductsMain(products)
     )
 
 
 @dp.callback_query(F.data == 'keyboard_skins')
 async def keyboard_skins(callback: types.CallbackQuery):
+    products = await shape_sdk.products.getProducts(callback.from_user.id)
     await callback.message.edit_caption(caption="Скины 📚",
                                         parse_mode="Markdown",
-                                        reply_markup=keyboards.buildProductsSkinsMain()
+                                        reply_markup=keyboards.buildProductsSkinsMain(products)
     )
 
 
