@@ -1,14 +1,17 @@
 import time
 from typing import List
 from shape_sdk import ProductType, OrderType
+from shape_sdk.types.order_type import OrderResultType
 from shape_sdk.types.payments import PaymentHandler
+from aiogram.utils.markdown import link
 from datetime import datetime
 
 
 def buildStartText(name: str) -> str:
     return f"Привет, {name}!\n" + \
             "Для оформления заказа используйте клавиатуру\n" + \
-            "При возникновении проблем перезагрузите бота. Для перезагрузки отправьте команду /start"
+            "При возникновении проблем перезагрузите бота. Для перезагрузки отправьте команду /start\n\n" + \
+            'Для дополнительной информации отправьте команду /help'
 
 
 def buildProductText(product: ProductType | None) -> str:
@@ -66,11 +69,16 @@ def buildOrderTextMore(order: OrderType) -> str:
            f'Создан: *{timeDelta(created_at)}*'
 
 
-def buildInputsKeyboard() -> str:
+def buildInputsText() -> str:
     return 'Теперь опишите ваш заказ. Можете отправлять референсы *как файлы* или же просто опишите заказ текстом.\n\n' + \
            'Затем нажмите кнопку "Продолжить"'
 
 
 def buildPaymentText(payment: PaymentHandler) -> str:
     return f'Ссылка для оплаты заказа на сумму {payment.amount}₽ создана.\n\n' + \
-           str(payment.url)
+            link('Ссылка для оплаты', str(payment.url))
+
+
+def buildResultType(result: OrderResultType) -> str:
+    return f'{result.title}\n' + \
+           f'{result.s3url}'

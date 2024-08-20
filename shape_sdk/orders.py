@@ -76,7 +76,7 @@ async def correctionHandler(user_id: int, correction_id: int) -> CorrectionType 
     return CorrectionType(**body)
 
 
-async def getResult(user_id: int, order_id: int) -> OrderResultType | None:
+async def getResult(user_id: int, order_id: int) -> List[OrderResultType] | None:
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/result', user_id)
     if status != 200:
         return None
@@ -94,7 +94,8 @@ async def createPayment(user_id: int, order_id: int) -> PaymentHandler | None:
 
 async def checkPayment(user_id: int, order_id: int) -> OrderType | None:
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/payment/check', user_id)
+    products = await getProducts(user_id)
     if status != 200:
         return None
     
-    return OrderType(**body)
+    return OrderType(products, **body)
