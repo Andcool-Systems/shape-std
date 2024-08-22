@@ -447,6 +447,10 @@ async def correctionsFinish(callback: types.CallbackQuery, state: FSMContext):
         return
     
     descriptions = ' '.join(_session.descriptions)
+    if not descriptions:
+        await callback.message.answer('Отправьте хотя бы одно сообщение с описанием исправления!')
+        return
+    
     code = await shape_sdk.orders.createCorrection(
         callback.from_user.id,
         int(order_id),
