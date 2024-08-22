@@ -79,6 +79,5 @@ def buildPaymentText(payment: PaymentHandler) -> str:
             link('Ссылка для оплаты', str(payment.url))
 
 
-def buildResultType(result: OrderResultType) -> str:
-    return f'{result.title}\n' + \
-           f'{result.s3url}'
+def buildResult(result: OrderResultType) -> str:
+    return f'{result.title}'

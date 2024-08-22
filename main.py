@@ -1,31 +1,37 @@
+"""
+by AndcoolSystems, 2024
+"""
+
+from email_validator import validate_email, EmailNotValidError
+from aiogram.fsm.state import StatesGroup, State
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters.command import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.methods import DeleteWebhook
+from modules.session import OrderSession
+import modules.keyboards as keyboards
+from aiogram.types import FSInputFile
+from aiogram.filters import Command
+from dotenv import load_dotenv
+import modules.texts as texts
+from typing import List
+import shape_sdk
 import asyncio
 import logging
-from typing import List
-from aiogram import Bot, Dispatcher, types, F
-from aiogram.methods import DeleteWebhook
-from aiogram.filters.command import Command
-from aiogram.types import FSInputFile
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.context import FSMContext
 import time
-import modules.keyboards as keyboards
-import modules.texts as texts
-from dotenv import load_dotenv
 import os
-import shape_sdk
-from aiogram.filters import Command
-from modules.session import OrderSession
-from email_validator import validate_email, EmailNotValidError
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 TOKEN=os.getenv('TOKEN')
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+api_manager = shape_sdk.api_manager.ApiManager()
 
 
 class States(StatesGroup):
     """Стейты для aiogram"""
+
     email_wait = State()
     params_waiting = State()
 
@@ -34,6 +40,7 @@ async def clearTemp(state: FSMContext):
     messages: List[types.Message] = (await state.get_data()).get('temporary_messages', None)
     if not messages:
         return
+    
     for message in messages:
         try:
             await message.delete()
@@ -284,7 +291,7 @@ async def handleParams(message: types.Message, state: FSMContext):
             await inputs_message.edit_text(
                 text=texts.buildInputsText() + \
                     f'\n\nКоличество вложений: *{len(_session.attachments)}*',
-                reply_markup=keyboards.buildInputsKeyboard(),
+                reply_markup=inputs_message.reply_markup,
                 parse_mode='Markdown'
             )
         except Exception:
@@ -386,26 +393,36 @@ async def viewResult(callback: types.CallbackQuery, state: FSMContext):
 
     order = await shape_sdk.orders.getOrder(callback.from_user.id, order_id)
     results = await shape_sdk.orders.getResult(callback.from_user.id, order_id)
-    await callback.message.answer(
+    temporary_messages = [await callback.message.answer(
         text=texts.buildOrderTextMore(order),
-        reply_markup=keyboards.buildOrderKeyboardMore(order),
+        reply_markup=keyboards.buildOrderKeyboardMore(order, False),
         parse_mode='Markdown'
-    )
+    )]
+    await state.update_data(temporary_messages=temporary_messages)
 
-    if not result:
+    if not results:
         await callback.answer('⚠️ Не удалось получить результат')
         return
     
     for result in results:
-        await callback.message.answer(
-            text=texts.buildResultType(result),
+        data = await api_manager.getResultPhoto(result.s3url)
+        if not data:
+            await callback.message.answer('⚠️ Не удалось получить результат!')
+            return
+        
+        message_temp = await callback.message.answer_document(
+            document=types.BufferedInputFile(file=data, filename="result.png"),
             parse_mode='Markdown'
         )
+        temporary_messages.append(message_temp)
+
+    await state.update_data(temporary_messages=temporary_messages)
 
 
 @dp.callback_query(F.data.startswith("corrections_add_"))
 async def addCorrections(callback: types.CallbackQuery, state: FSMContext):
     order_id = callback.data.replace("corrections_add_", "")
+    await clearTemp(state)
     message = await callback.message.answer(
         text=texts.buildInputsText(),
         reply_markup=keyboards.buildInputsCorrectionKeyboard(order_id),
@@ -430,7 +447,13 @@ async def correctionsFinish(callback: types.CallbackQuery, state: FSMContext):
         return
     
     descriptions = ' '.join(_session.descriptions)
-    code = await shape_sdk.orders.createCorrection(callback.from_user.id, int(order_id), order.executor_id, descriptions, _session.attachments)
+    code = await shape_sdk.orders.createCorrection(
+        callback.from_user.id,
+        int(order_id),
+        order.executor_id,
+        descriptions,
+        _session.attachments
+    )
     if code != 200:
         await callback.answer('⚠️ Не удалось создать исправление!')
         return

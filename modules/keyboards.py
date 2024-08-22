@@ -78,7 +78,7 @@ def buildOrderKeyboard(order: OrderType) -> InlineKeyboardBuilder:
     return builder.as_markup()
 
 
-def buildOrderKeyboardMore(order: OrderType) -> InlineKeyboardBuilder:
+def buildOrderKeyboardMore(order: OrderType, with_add_buttons: bool = True) -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
     match order.status:
         case 'created':
@@ -86,12 +86,15 @@ def buildOrderKeyboardMore(order: OrderType) -> InlineKeyboardBuilder:
         case 'awaiting_payment':
             builder.row(types.InlineKeyboardButton(text="💳 Проверить статус оплаты", callback_data=f'check_payment_{order.id}'))
         case 'awaiting_confirmation':
-            builder.row(types.InlineKeyboardButton(text="✨ Посмотреть результат", callback_data=f'view_result_{order.id}'))
+            if with_add_buttons:
+                builder.row(types.InlineKeyboardButton(text="✨ Посмотреть результат", callback_data=f'view_result_{order.id}'))
             builder.row(types.InlineKeyboardButton(text="✅ Подтвердить", callback_data=f'confirm_{order.id}'),
                         types.InlineKeyboardButton(text="🔄 Запросить правки", callback_data=f'corrections_add_{order.id}'))
         case 'done':
-            builder.row(types.InlineKeyboardButton(text="✨ Посмотреть результат", callback_data=f'view_result_{order.id}'))
-    builder.row(types.InlineKeyboardButton(text="⬆️ Свернуть", callback_data=f'order_expand_less_{order.id}'))
+            if with_add_buttons:
+                builder.row(types.InlineKeyboardButton(text="✨ Посмотреть результат", callback_data=f'view_result_{order.id}'))
+    if with_add_buttons:
+        builder.row(types.InlineKeyboardButton(text="⬆️ Свернуть", callback_data=f'order_expand_less_{order.id}'))
     return builder.as_markup()
 
 

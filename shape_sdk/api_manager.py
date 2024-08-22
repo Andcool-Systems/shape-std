@@ -31,3 +31,10 @@ class ApiManager:
         except Exception as e:
             print('API exception has ocurred:', e)
             return None, 502
+        
+    async def getResultPhoto(self, url: str):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    return None
+                return await response.read()
