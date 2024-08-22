@@ -1,3 +1,5 @@
 aiogram
 email-validator
 python-dotenv
+aiohttp
+orjson

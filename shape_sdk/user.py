@@ -1,4 +1,3 @@
-import os
 from . import api_manager
 from .types.user_type import UserType
 

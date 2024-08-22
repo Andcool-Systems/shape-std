@@ -1,9 +1,7 @@
 import time
 from typing import List
 from shape_sdk import ProductType, OrderType
-from shape_sdk.types.order_type import OrderResultType
 from shape_sdk.types.payments import PaymentHandler
-from aiogram.utils.markdown import link
 from datetime import datetime
 
 
