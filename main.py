@@ -10,7 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.methods import DeleteWebhook
 from modules.session import OrderSession
 import modules.keyboards as keyboards
-from aiogram.types import FSInputFile
+from aiogram.types import FSInputFile, InputMediaPhoto
 from aiogram.filters import Command
 from dotenv import load_dotenv
 import modules.texts as texts
@@ -83,9 +83,9 @@ async def catalog(callback: types.CallbackQuery):
     """Хендлер колбека кнопки каталога"""
 
     products = await shape_sdk.products.getProducts(callback.from_user.id) or []
-    await callback.message.edit_caption(caption="Каталог 📚",
-                                        parse_mode="Markdown",
-                                        reply_markup=keyboards.buildProductsMain(products)
+    await callback.message.edit_media(
+        media=InputMediaPhoto(media=FSInputFile("static/catalog.png"), caption="Каталог 📚", parse_mode="Markdown"),
+        reply_markup=keyboards.buildProductsMain(products)
     )
 
 
@@ -94,9 +94,9 @@ async def keyboard_skins(callback: types.CallbackQuery):
     """Хендлер колбека кнопки заказа скина"""
 
     products = await shape_sdk.products.getProducts(callback.from_user.id) or []
-    await callback.message.edit_caption(caption="Скины 📚",
-                                        parse_mode="Markdown",
-                                        reply_markup=keyboards.buildProductsSkinsMain(products)
+    await callback.message.edit_media(
+        media=InputMediaPhoto(media=FSInputFile("static/catalog.png"), caption="Скины 📚", parse_mode="Markdown"),
+        reply_markup=keyboards.buildProductsSkinsMain(products)
     )
 
 
@@ -104,9 +104,8 @@ async def keyboard_skins(callback: types.CallbackQuery):
 async def main_menu(callback: types.CallbackQuery):
     """Хендлер колбека кнопки Главного меню"""
 
-    await callback.message.edit_caption(
-        caption=texts.buildStartText(callback.from_user.full_name),
-        parse_mode="Markdown",
+    await callback.message.edit_media(
+        media=InputMediaPhoto(media=FSInputFile("static/hello.jpg"), caption=texts.buildStartText(callback.from_user.full_name), parse_mode="Markdown"),
         reply_markup=keyboards.buildStartKeyboard()
     )
 
@@ -187,7 +186,7 @@ async def checkPayment(callback: types.CallbackQuery, state: FSMContext):
         return
     
     if order.status == 'awaiting_payment':
-        await callback.answer('Оплата не прошла. Попробуйте снова через несколько секунд')
+        await callback.message.answer(texts.buildPaymentErrorText())
         return
     
     await callback.message.edit_text(
@@ -462,6 +461,7 @@ async def handleEmail(message: types.Message, state: FSMContext):
         if not result:
             await message.answer('⚠️ Не удалось установить адрес электронной почты')
             return
+        await state.set_state(state=None)
         await createPayment(message.from_user.id, message, state)  # Возвращаемся к самому началу диалога оплаты
     except EmailNotValidError:
         """Если валидация не пошла"""

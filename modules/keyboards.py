@@ -67,7 +67,7 @@ def buildHandsKeyboard() -> InlineKeyboardBuilder:
     """Клавиатура выбора рук"""
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="Обычные", callback_data='hands_default'),
+    builder.row(types.InlineKeyboardButton(text="Классические", callback_data='hands_default'),
                 types.InlineKeyboardButton(text="Тонкие", callback_data='hands_slim'))
     return builder.as_markup()
 
