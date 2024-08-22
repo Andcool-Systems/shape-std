@@ -122,10 +122,19 @@ def buildOrderKeyboardMore(order: OrderType, with_add_buttons: bool = True) -> I
     return builder.as_markup()
 
 
-def buildPaymentCheck(order_id: int) -> InlineKeyboardBuilder:
+def buildPaymentCheck(order_id: int, pay_url: str) -> InlineKeyboardBuilder:
     """Клавиатура для сообщения проверки оплаты"""
 
     builder = InlineKeyboardBuilder()
+    builder.row(types.InlineKeyboardButton(text="Оплатить", url=pay_url))
     builder.row(types.InlineKeyboardButton(text="💳 Проверить статус оплаты", callback_data=f'check_payment_{order_id}'))
     return builder.as_markup()
 
+
+def buildConfirmNoAttachments() -> InlineKeyboardBuilder:
+    """Клавиатура для сообщения отсутствия вложений"""
+
+    builder = InlineKeyboardBuilder()
+    builder.row(types.InlineKeyboardButton(text="Да", callback_data=f'no_attachment_yes'),
+                types.InlineKeyboardButton(text="Нет", callback_data=f'no_attachment_no'))
+    return builder.as_markup()

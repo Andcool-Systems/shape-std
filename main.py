@@ -80,7 +80,7 @@ async def handlePass(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == 'catalog')
 async def catalog(callback: types.CallbackQuery):
-    """Хендлер колбэка кнопки каталога"""
+    """Хендлер колбека кнопки каталога"""
 
     products = await shape_sdk.products.getProducts(callback.from_user.id) or []
     await callback.message.edit_caption(caption="Каталог 📚",
@@ -363,7 +363,36 @@ async def inputsDone(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer('Отправьте хотя бы одно сообщение с описанием заказа!')
         return
     
+    if not _session.attachments:
+        await callback.answer()
+        await callback.message.answer(
+            text=texts.buildNoAttachmentText(),
+            reply_markup=keyboards.buildConfirmNoAttachments(),
+            parse_mode='Markdown'
+        )
+        return
+
+    await createOrder(callback, state)
+
+
+@dp.callback_query(F.data == 'no_attachment_no')
+async def noAttachmentsNo(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
+
+
+@dp.callback_query(F.data == 'no_attachment_yes')
+async def createOrder(callback: types.CallbackQuery, state: FSMContext):
+    _session: OrderSession | None = (await state.get_data()).get('session', None)
+    inputs_message: types.Message | None = (await state.get_data()).get('inputs_message', None)
+    if not _session:
+        await callback.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
+        return
+    await callback.message.delete()
+    if inputs_message:
+        try:
+            await inputs_message.delete()
+        except Exception:
+            pass
 
     response = await shape_sdk.orders.createOrder(
         callback.from_user.id,
@@ -408,7 +437,7 @@ async def createPayment(user_id: int, message: types.Message, state: FSMContext,
     payment = await shape_sdk.orders.createPayment(user_id, order_id)
     await message.answer(
         text=texts.buildPaymentText(payment),
-        reply_markup=keyboards.buildPaymentCheck(order_id),
+        reply_markup=keyboards.buildPaymentCheck(order_id, payment.url),
         parse_mode='Markdown'
     )
 

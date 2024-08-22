@@ -12,8 +12,7 @@ def buildStartText(name: str) -> str:
 
     return f"Привет, {name}!\n" + \
             "Для оформления заказа используйте клавиатуру\n" + \
-            "При возникновении проблем перезагрузите бота. Для перезагрузки отправьте команду /start\n\n" + \
-            'Для дополнительной информации отправьте команду /help'
+            "При возникновении проблем перезагрузите бота. Для перезагрузки отправьте команду /start"
 
 
 def buildProductText(product: ProductType | None) -> str:
@@ -87,5 +86,10 @@ def buildInputsText() -> str:
 def buildPaymentText(payment: PaymentHandler) -> str:
     """Конструктор сообщения об оплате"""
 
-    return f'Ссылка для оплаты заказа на сумму {payment.amount}₽ создана.\n\n' + \
-            link('Ссылка для оплаты', str(payment.url))
+    return f'Ссылка для оплаты заказа на сумму {payment.amount}₽ создана.'
+
+
+def buildNoAttachmentText() -> str:
+    """Конструктор сообщения об отсутствии вложений"""
+
+    return f'В вашем описании нет вложений, желаете продолжить?'
