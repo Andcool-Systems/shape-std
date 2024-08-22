@@ -1,7 +1,6 @@
 from typing import List
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import types
-
 from shape_sdk.types.order_type import OrderType
 from shape_sdk.types.product_type import ProductType
 

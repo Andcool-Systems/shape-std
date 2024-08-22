@@ -122,7 +122,9 @@ async def aboutProduct(callback: types.CallbackQuery):
         reply_markup=keyboards.buildProductKeyboard(product)
     )
 
+
 # ------------------------------- Orders -------------------------------------
+
 
 @dp.callback_query(F.data == 'my_orders')
 async def orders(callback: types.CallbackQuery, state: FSMContext):
@@ -198,6 +200,7 @@ async def checkPayment(callback: types.CallbackQuery, state: FSMContext):
 
 
 # ----------------------------- Orders ------------------------------------
+
 
 @dp.callback_query(F.data.startswith("orderProduct_"))
 async def orderProduct(callback: types.CallbackQuery, state: FSMContext):
