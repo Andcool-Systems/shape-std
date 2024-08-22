@@ -1,4 +1,6 @@
 class CorrectionType:
+    """Order correction type"""
+
     def __init__(self,
                  id: int,
                  order_id: int,

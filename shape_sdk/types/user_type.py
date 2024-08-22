@@ -2,6 +2,8 @@ from typing import List
 
 
 class UserType:
+    """User type"""
+
     def __init__(self, 
                  id: int, 
                  email: str, 

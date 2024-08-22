@@ -1,4 +1,6 @@
 class PaymentHandler:
+    """Payments type"""
+
     def __init__(self, 
                  id: int, 
                  amount: int, 

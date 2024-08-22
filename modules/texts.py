@@ -8,6 +8,8 @@ from datetime import datetime
 
 
 def buildStartText(name: str) -> str:
+    """Конструктор главного сообщения бота"""
+
     return f"Привет, {name}!\n" + \
             "Для оформления заказа используйте клавиатуру\n" + \
             "При возникновении проблем перезагрузите бота. Для перезагрузки отправьте команду /start\n\n" + \
@@ -15,6 +17,8 @@ def buildStartText(name: str) -> str:
 
 
 def buildProductText(product: ProductType | None) -> str:
+    """Конструктор описания продукта"""
+
     if not product:
         return '⚠️ Не удалось получить информацию о продукте!'
 
@@ -58,10 +62,14 @@ def timeDelta(timestamp: str):
 
 
 def buildOrderText(order: OrderType) -> str:
+    """Конструктор краткой информации о заказе"""
+
     return f'Заказ #{order.id} — {order.product.title}'
 
 
 def buildOrderTextMore(order: OrderType) -> str:
+    """Конструктор полного сообщения информации о заказе"""
+
     created_at = datetime.fromisoformat(order.created_at).timestamp() + 10_800
     return f'Заказ #{order.id} — {order.product.title}\n\n' + \
            f'Статус: *{state_str[order.status]}*\n' + \
@@ -70,14 +78,14 @@ def buildOrderTextMore(order: OrderType) -> str:
 
 
 def buildInputsText() -> str:
+    """Конструктор сообщения ожидания описания заказа"""
+
     return 'Теперь опишите ваш заказ. Можете отправлять референсы *как файлы* или же просто опишите заказ текстом.\n\n' + \
            'Затем нажмите кнопку "Продолжить"'
 
 
 def buildPaymentText(payment: PaymentHandler) -> str:
+    """Конструктор сообщения об оплате"""
+
     return f'Ссылка для оплаты заказа на сумму {payment.amount}₽ создана.\n\n' + \
             link('Ссылка для оплаты', str(payment.url))
-
-
-def buildResult(result: OrderResultType) -> str:
-    return f'{result.title}'

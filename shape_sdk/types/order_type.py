@@ -1,7 +1,10 @@
 from typing import List
 from shape_sdk.products import ProductType
 
+
 class OrderType:
+    """Order type"""
+
     def __init__(self,
                  products: List[ProductType],
                  id: int,
@@ -34,6 +37,8 @@ class OrderType:
 
 
 class OrderResultType:
+    """Order result type"""
+
     def __init__(self, 
                 id: str,
                 s3url: str,

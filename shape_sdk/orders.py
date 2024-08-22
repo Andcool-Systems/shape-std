@@ -10,6 +10,8 @@ apiManager = api_manager.ApiManager()
 
 
 async def createOrder(user_id: int, product_id: int, parameters: any, attachments: any) -> int:
+    """Create order"""
+
     body = {
         'product_id': product_id,
         'parameters': parameters,
@@ -20,11 +22,15 @@ async def createOrder(user_id: int, product_id: int, parameters: any, attachment
 
 
 async def confirmOrder(user_id: int, order_id: str) -> int:
+    """Confirm order by id"""
+
     _, status = await apiManager.send_request(f'/bot/orders/{order_id}/confirm', user_id, method='POST')
     return status
 
 
 async def getOrder(user_id: int, order_id: str) -> OrderType | None: 
+    """Get order by id"""
+
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}', user_id)
     products = await getProducts(user_id)
     if status != 200 or not products:
@@ -33,7 +39,9 @@ async def getOrder(user_id: int, order_id: str) -> OrderType | None:
     return OrderType(products, **body)
 
 
-async def getOrders(user_id: int) -> List[OrderType] | None: 
+async def getOrders(user_id: int) -> List[OrderType] | None:
+    """Get user's orders"""
+
     body, status = await apiManager.send_request(f'/bot/users/orders', user_id)
     products = await getProducts(user_id)
     if status != 200 or not products:
@@ -43,6 +51,8 @@ async def getOrders(user_id: int) -> List[OrderType] | None:
 
 
 async def getCorrections(user_id: int, order_id: int) -> List[CorrectionType] | None:
+    """Get order corrections"""
+
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/corrections', user_id)
 
     if status != 200:
@@ -51,12 +61,9 @@ async def getCorrections(user_id: int, order_id: int) -> List[CorrectionType] | 
     return list(map(lambda order: CorrectionType(**order), body))
 
 
-async def placeToQueue(user_id: int, order_id: int) -> bool:
-    _, status = await apiManager.send_request(f'/bot/orders/{order_id}/queue', user_id)
-    return status
-
-
 async def createCorrection(user_id: int, order_id: int, executor_id: int, task: str, attachments: any) -> int:
+    """Create order correction"""
+
     requestBody = {
         'order_id': order_id,
         'executor_id': executor_id,
@@ -69,6 +76,8 @@ async def createCorrection(user_id: int, order_id: int, executor_id: int, task: 
 
 
 async def correctionHandler(user_id: int, correction_id: int) -> CorrectionType | None:
+    """Get correction by id"""
+
     body, status = await apiManager.send_request(f'/bot/corrections/{correction_id}', user_id)
     if status != 200:
         return None
@@ -77,6 +86,8 @@ async def correctionHandler(user_id: int, correction_id: int) -> CorrectionType 
 
 
 async def getResult(user_id: int, order_id: int) -> List[OrderResultType] | None:
+    """Get order result by id"""
+
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/result', user_id)
     if status != 200:
         return None
@@ -85,6 +96,8 @@ async def getResult(user_id: int, order_id: int) -> List[OrderResultType] | None
 
 
 async def createPayment(user_id: int, order_id: int) -> PaymentHandler | None:
+    """Create order payment"""
+
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/payment/create', user_id)
     if status != 200:
         return None
@@ -93,6 +106,8 @@ async def createPayment(user_id: int, order_id: int) -> PaymentHandler | None:
 
 
 async def checkPayment(user_id: int, order_id: int) -> OrderType | None:
+    """Check order payment status"""
+
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/payment/check', user_id)
     products = await getProducts(user_id)
     if status != 200:

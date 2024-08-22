@@ -5,7 +5,10 @@ from aiogram import types
 from shape_sdk.types.order_type import OrderType
 from shape_sdk.types.product_type import ProductType
 
+
 def buildStartKeyboard(more: bool = False) -> InlineKeyboardBuilder:
+    """Клавиатура стартового сообщения"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="Заказать скин 🛒", callback_data='keyboard_skins')
                 )
@@ -19,6 +22,8 @@ def buildStartKeyboard(more: bool = False) -> InlineKeyboardBuilder:
 
 
 def getPriceStr(products: List[ProductType], nominal_id: str):
+    """Получает цену продукта из списка"""
+
     for product in products:
         if product.nominal_id == nominal_id:
             return f'{product.price}₽'
@@ -26,6 +31,8 @@ def getPriceStr(products: List[ProductType], nominal_id: str):
 
 
 def buildProductsMain(products: List[ProductType]) -> InlineKeyboardBuilder:
+    """Главная клавиатура каталога"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text=f"Премиум скин x64 — {getPriceStr(products, 'skin_premium') or 'Недоступно'}", callback_data='about_skin_premium' if getPriceStr(products, 'skin_premium') else 'pass'))
     builder.row(types.InlineKeyboardButton(text=f"Стандарт скин x64 — {getPriceStr(products, 'skin64') or 'Недоступно'}", callback_data='about_skin64' if getPriceStr(products, 'skin64') else 'pass'))
@@ -37,6 +44,8 @@ def buildProductsMain(products: List[ProductType]) -> InlineKeyboardBuilder:
 
 
 def buildProductsSkinsMain(products: List[ProductType]) -> InlineKeyboardBuilder:
+    """Вспомогательная клавиатура каталога (только скины)"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text=f"Премиум скин x64 — {getPriceStr(products, 'skin_premium') or 'Недоступно'}", callback_data='about_skin_premium' if getPriceStr(products, 'skin_premium') else 'pass'))
     builder.row(types.InlineKeyboardButton(text=f"Стандарт скин x64 — {getPriceStr(products, 'skin64') or 'Недоступно'}", callback_data='about_skin64' if getPriceStr(products, 'skin64') else 'pass'))
@@ -46,6 +55,8 @@ def buildProductsSkinsMain(products: List[ProductType]) -> InlineKeyboardBuilder
 
 
 def buildProductKeyboard(product: ProductType) -> InlineKeyboardBuilder:
+    """Клавиатура отдельного продукта"""
+
     builder = InlineKeyboardBuilder()
     product and builder.row(types.InlineKeyboardButton(text="📦 Заказать", callback_data=f'orderProduct_{product.nominal_id}'))
     builder.row(types.InlineKeyboardButton(text="« Назад", callback_data='catalog'),
@@ -54,6 +65,8 @@ def buildProductKeyboard(product: ProductType) -> InlineKeyboardBuilder:
 
 
 def buildHandsKeyboard() -> InlineKeyboardBuilder:
+    """Клавиатура выбора рук"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="Обычные", callback_data='hands_default'),
                 types.InlineKeyboardButton(text="Тонкие", callback_data='hands_slim'))
@@ -61,24 +74,35 @@ def buildHandsKeyboard() -> InlineKeyboardBuilder:
 
 
 def buildInputsKeyboard() -> InlineKeyboardBuilder:
+    """Клавиатура для сообщения ввода описания заказа"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="Продолжить", callback_data='inputs_done'))
     return builder.as_markup()
 
 
 def buildInputsCorrectionKeyboard(order_id: int) -> InlineKeyboardBuilder:
+    """Клавиатура для сообщения с коррекциями"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="Продолжить", callback_data=f'correction_done_{order_id}'))
     return builder.as_markup()
 
 
 def buildOrderKeyboard(order: OrderType) -> InlineKeyboardBuilder:
+    """Клавиатура для краткого описания заказа"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="⬇️ Раскрыть", callback_data=f'order_expand_more_{order.id}'))
     return builder.as_markup()
 
 
 def buildOrderKeyboardMore(order: OrderType, with_add_buttons: bool = True) -> InlineKeyboardBuilder:
+    """
+    Клавиатура для полного описания заказа  
+    `with_add_buttons` Отвечает за отображение кнопки 'Свернуть', 'Посмотреть результат'
+    """
+
     builder = InlineKeyboardBuilder()
     match order.status:
         case 'created':
@@ -99,6 +123,8 @@ def buildOrderKeyboardMore(order: OrderType, with_add_buttons: bool = True) -> I
 
 
 def buildPaymentCheck(order_id: int) -> InlineKeyboardBuilder:
+    """Клавиатура для сообщения проверки оплаты"""
+
     builder = InlineKeyboardBuilder()
     builder.row(types.InlineKeyboardButton(text="💳 Проверить статус оплаты", callback_data=f'check_payment_{order_id}'))
     return builder.as_markup()

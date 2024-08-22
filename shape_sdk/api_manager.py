@@ -11,6 +11,8 @@ class ApiManager:
         }
 
     async def send_request(self, url: str, user_id: int, body: any = None, method='GET'):
+        """Do API request"""
+
         headers = self.headers.copy()
         headers['user-id'] = str(user_id)
         try:
@@ -33,6 +35,8 @@ class ApiManager:
             return None, 502
         
     async def getResultPhoto(self, url: str):
+        """Do image request to API"""
+
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:

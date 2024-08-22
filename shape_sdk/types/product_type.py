@@ -1,5 +1,5 @@
 class ProductType:
-    """Product object"""
+    """Product type"""
     
     def __init__(self, 
                  id: int, 
