@@ -21,5 +21,5 @@ async def getProduct(user_id: int, product_id: str) -> ProductType | None:
     body, status = await apiManager.send_request(f'/bot/products/{product_id}', user_id)
     if status != 200:
         return None
-    
+
     return ProductType(**body)

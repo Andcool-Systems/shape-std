@@ -21,7 +21,7 @@ def buildProductText(product: ProductType | None) -> str:
 
     return f'{product.title} — {product.price}₽\n' + \
            f'🏷 Скидка: {product.discount}%\n\n' + \
-           product.description
+           str(product.description)
 
 
 state_str = {
