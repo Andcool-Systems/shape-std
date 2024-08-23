@@ -60,12 +60,17 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user = await shape_sdk.user.getUser(aiogram_user.id)  # Получаем юзера из апи
     if not user:
         """Если юзера нет, отправляем запрос на его создание"""
-        await shape_sdk.user.createUser(aiogram_user.id, aiogram_user.first_name or 'first', aiogram_user.last_name or 'last')
+        await shape_sdk.user.createUser(
+            aiogram_user.id, 
+            aiogram_user.first_name or 'first',
+            aiogram_user.last_name or 'last',
+            aiogram_user.username
+
+        )
 
     await message.answer_photo(
         photo=FSInputFile("./static/hello.jpg"),
         caption=texts.buildStartText(message.from_user.full_name),
-        parse_mode="Markdown",
         reply_markup=keyboards.buildStartKeyboard()
     )
 

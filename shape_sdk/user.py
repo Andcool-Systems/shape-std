@@ -17,10 +17,11 @@ async def setEmail(user_id: int, email: str) -> bool:
     return status == 200
 
 
-async def createUser(user_id: int, first_name: str, last_name: str) -> bool:
+async def createUser(user_id: int, first_name: str, last_name: str, nickname: str | None) -> bool:
     body = {
         'first_name': first_name,
-        'last_name': last_name
+        'last_name': last_name,
+        'tg_nickname': nickname
     }
     _, status = await apiManager.send_request('/bot/users/create', user_id, body=body, method='POST')
     return status
