@@ -492,6 +492,11 @@ async def confirmOrder(callback: types.CallbackQuery):
         parse_mode='Markdown'
     )
 
+    await callback.message.answer(
+        text=texts.buildThanksText(),
+        parse_mode='Markdown'
+    )
+
 
 @dp.callback_query(F.data.startswith("view_result_"))
 async def viewResult(callback: types.CallbackQuery, state: FSMContext):

@@ -3,6 +3,7 @@ from typing import List
 from shape_sdk import ProductType, OrderType
 from shape_sdk.types.payments import PaymentHandler
 from datetime import datetime
+from aiogram.utils.markdown import link
 
 
 def buildStartText(name: str) -> str:
@@ -97,3 +98,8 @@ def buildNoAttachmentText() -> str:
 def buildPaymentErrorText() -> str:
     return 'Оплата не прошла\n\n' + \
            'Попробуйте оплатить снова или обратитесь в поддержку: @aktib4ik'
+
+
+def buildThanksText() -> str:
+    return 'Спасибо, что заказали у нас.\n\n' +\
+           f'Оставьте своё впечатление о заказе у нас в отзывах — {link('ссылка', 'https://t.me/shapelikes')}!'
