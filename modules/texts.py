@@ -101,5 +101,6 @@ def buildPaymentErrorText() -> str:
 
 
 def buildThanksText() -> str:
-    return 'Спасибо, что заказали у нас.\n\n' +\
-           f'Оставьте своё впечатление о заказе у нас в отзывах — {link("ссылка", "https://t.me/shapelikes")}!'
+    return '*Вы подтвердили выполнение заказа!\n\n*' + \
+    f'Поделиться впечатлением: {link("@shapelikes", "https://t.me/shapelikes")}\n' + \
+    f'Оставить чаевые: {link("t.me/shapestd/341", "https://t.me/shapestd/341")}'
