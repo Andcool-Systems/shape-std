@@ -97,7 +97,7 @@ def buildNoAttachmentText() -> str:
 
 def buildPaymentErrorText() -> str:
     return 'Оплата не прошла\n\n' + \
-           'Попробуйте оплатить снова или обратитесь в поддержку: @aktib4ik'
+           'Попробуйте оплатить снова или обратитесь в поддержку: @shapesupport'
 
 
 def buildThanksText() -> str:
