@@ -17,7 +17,8 @@ class OrderType:
                  created_at: str,
                  start_time: str,
                  send_time: str,
-                 confirm_time: str) -> None:
+                 confirm_time: str,
+                 **kwargs) -> None:
         self.id: int = id
         self.product_id: int = product_id
         self.executor_id: int | None = executor_id
