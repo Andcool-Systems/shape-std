@@ -134,6 +134,23 @@ def buildConfirmNoAttachments() -> InlineKeyboardBuilder:
     """Клавиатура для сообщения отсутствия вложений"""
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="Да", callback_data=f'no_attachment_yes'),
-                types.InlineKeyboardButton(text="Нет", callback_data=f'no_attachment_no'))
+    builder.row(types.InlineKeyboardButton(text="Да", callback_data='no_attachment_yes'),
+                types.InlineKeyboardButton(text="Нет", callback_data='no_attachment_no'))
+    return builder.as_markup()
+
+
+def buildPromocodeKeyboard() -> InlineKeyboardBuilder:
+    """Клавиатура для сообщения с промокодом"""
+
+    builder = InlineKeyboardBuilder()
+    builder.row(types.InlineKeyboardButton(text="Пропустить", callback_data='promocode'))
+    return builder.as_markup()
+
+
+def buildPromocodeAcceptKeyboard(promocode_id: int) -> InlineKeyboardBuilder:
+    """Клавиатура для сообщения с подтверждением промокодом"""
+
+    builder = InlineKeyboardBuilder()
+    builder.row(types.InlineKeyboardButton(text="Применить", callback_data=f'promocode_confirm_{promocode_id}'),
+                types.InlineKeyboardButton(text="Отмена", callback_data='promocode'))
     return builder.as_markup()

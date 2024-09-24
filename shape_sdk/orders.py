@@ -1,7 +1,7 @@
 from shape_sdk.types.payments import PaymentHandler
 from . import api_manager
 from .types.corrections_type import CorrectionType
-from .types.order_type import OrderType, OrderResultType
+from .types.order_type import OrderType, OrderResultType, PromocodeType
 from typing import List
 from .products import getProducts
 
@@ -114,3 +114,20 @@ async def checkPayment(user_id: int, order_id: int) -> OrderType | None:
         return None
     
     return OrderType(products, **body)
+
+
+async def getPromocode(user_id: int, promocode_id: str) -> PromocodeType | None: 
+    """Get promocode by id"""
+
+    body, status = await apiManager.send_request(f'/bot/promocodes/{promocode_id}', user_id)
+    if status != 200:
+        return None
+    
+    return PromocodeType(**body)
+
+
+async def usePromocode(user_id: int, order_id: str, promocode_id: str) -> bool: 
+    """Use promocode in order"""
+
+    _, status = await apiManager.send_request(f'/bot/orders/{order_id}/promocode?id={promocode_id}', user_id, method='POST')
+    return status

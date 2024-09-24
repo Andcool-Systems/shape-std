@@ -1,6 +1,6 @@
 import time
 from typing import List
-from shape_sdk import ProductType, OrderType
+from shape_sdk import ProductType, OrderType, PromocodeType
 from shape_sdk.types.payments import PaymentHandler
 from datetime import datetime
 from aiogram.utils.markdown import link
@@ -105,3 +105,14 @@ def buildThanksText() -> str:
     return '*Вы подтвердили выполнение заказа!\n\n*' + \
     f'Поделиться впечатлением: {link("@shapelikes", "https://t.me/shapelikes")}\n' + \
     f'Оставить чаевые: {link("t.me/shapestd/341", "https://t.me/shapestd/341")}'
+
+
+def buildPromocodeText() -> str:
+    return '*Применить промокод*\n\nЕсли у Вас есть промокод, отправьте его сообщением ниже.'
+
+
+def buildPromocodeInfoText(promocode: PromocodeType) -> str:
+    until = datetime.fromisoformat(promocode.until_time).strftime('%H:%M:%S %d.%m.%Y')
+    return f'🏷️Промокод *{promocode.nominal_id}*\n' + \
+           f'Доступен до: *{until}*\n\n' + \
+            'Применить?'

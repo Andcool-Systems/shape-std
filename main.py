@@ -34,6 +34,7 @@ class States(StatesGroup):
 
     email_wait = State()
     params_waiting = State()
+    promocode_wait = State()
 
 
 async def clearTemp(state: FSMContext):
@@ -67,7 +68,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
             aiogram_user.username
 
         )
-
     await message.answer_photo(
         photo=FSInputFile("./static/hello.jpg"),
         caption=texts.buildStartText(message.from_user.full_name),
@@ -175,8 +175,9 @@ async def jumpPayment(callback: types.CallbackQuery, state: FSMContext):
     """Колбек для кнопки 'Оплатить заказ' в моих заказах"""
 
     order_id = callback.data.replace("jump_payment_", "")
+    await state.update_data(order_id=order_id)
     await clearTemp(state)
-    await createPayment(callback.from_user.id, callback.message, state, order_id)
+    await handlePromocode(callback, state)
 
 
 @dp.callback_query(F.data.startswith("check_payment_"))
@@ -424,14 +425,76 @@ async def createOrder(callback: types.CallbackQuery, state: FSMContext):
     поэтому приходится брать самый последний заказ из бд
     """
     await state.update_data(order_id=orders[-1].id)
+    await handlePromocode(callback, state)
+
+
+async def handlePromocode(callback: types.CallbackQuery, state: FSMContext):
+    """Отправляем сообщение о промокоде"""
+    message = await callback.message.answer(
+        texts.buildPromocodeText(),
+        reply_markup=keyboards.buildPromocodeKeyboard(),
+        parse_mode='Markdown'
+    )
+    await state.update_data(promocode_message=message)
+    await state.set_state(States.promocode_wait)
+
+
+@dp.callback_query(F.data == 'promocode')
+async def promocode(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     await createPayment(callback.from_user.id, callback.message, state)
 
 
-async def createPayment(user_id: int, message: types.Message, state: FSMContext, orderId: int = None):
+@dp.message(States.promocode_wait)
+async def handlePromocodeText(message: types.Message, state: FSMContext):
+    promocode_message: types.Message | None = (await state.get_data()).get('promocode_message', None)
+    promocode = await shape_sdk.orders.getPromocode(message.from_user.id, message.text)
+    if not promocode:
+        await message.answer('Такого промокода нет!')
+        return
+    
+    try: 
+        await promocode_message.edit_text(
+            text=texts.buildPromocodeInfoText(promocode),
+            reply_markup=keyboards.buildPromocodeAcceptKeyboard(promocode.id),
+            parse_mode='Markdown'
+        )
+    except Exception:
+        message = await message.answer(
+            text=texts.buildPromocodeInfoText(promocode),
+            reply_markup=keyboards.buildPromocodeAcceptKeyboard(promocode.id),
+            parse_mode='Markdown'
+        )
+        await state.update_data(promocode_message=message)
+    await message.delete()
+    await state.set_state(None)
+
+
+@dp.callback_query(F.data.startswith('promocode_confirm_'))
+async def promocode(callback: types.CallbackQuery, state: FSMContext):
+    promocode_id = callback.data.replace("promocode_confirm_", "")
+    order_id: int | None = (await state.get_data()).get('order_id', None)
+    if not order_id:
+        await callback.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
+        return
+    
+    code = await shape_sdk.orders.usePromocode(callback.from_user.id, order_id, promocode_id)
+    if code != 200:
+        if code == 404:
+            await callback.answer('Промокод не найден!')
+        elif code == 409:
+            await callback.answer('Промокод уже использован!')
+        return
+
+    await callback.message.delete()
+    await createPayment(callback.from_user.id, callback.message, state)
+
+
+async def createPayment(user_id: int, message: types.Message, state: FSMContext):
     """Функция для начала этапа оплаты"""
 
     # Прокинуть айдишник заказа через колбеки тут не выйдет, поэтому достаём его из FSM
-    order_id: int | None = orderId or (await state.get_data()).get('order_id', None)
+    order_id: int | None = (await state.get_data()).get('order_id', None)
     user = await shape_sdk.user.getUser(user_id)
     if not user.email:
         """

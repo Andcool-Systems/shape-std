@@ -17,6 +17,7 @@ class OrderType:
                  created_at: str,
                  start_time: str,
                  send_time: str,
+                 promocode_id: int,
                  confirm_time: str) -> None:
         self.id: int = id
         self.product_id: int = product_id
@@ -30,6 +31,7 @@ class OrderType:
         self.send_time: str = send_time
         self.confirm_time: str = confirm_time
         self.product: ProductType = None
+        self.promocode_id = promocode_id
         for product in products:
             if product.id == self.product_id:
                 self.product = product
@@ -50,3 +52,20 @@ class OrderResultType:
         self.title: str = title
         self.extension: str = extension
         self.size: int = size
+
+
+class PromocodeType:
+    """Promocode Type"""
+
+    def __init__(self,
+                 id: int,
+                 nominal_id: str,
+                 count: int,
+                 max_count: int,
+                 until_time: str
+                ):
+        self.id = id
+        self.nominal_id = nominal_id
+        self.count = count
+        self.max_count = max_count
+        self.until_time = until_time
