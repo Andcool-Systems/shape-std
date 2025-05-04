@@ -23,7 +23,7 @@ import os
 
 load_dotenv()
 logging.basicConfig(level=logging.ERROR)
-TOKEN=os.getenv('TOKEN')
+TOKEN = os.getenv('TOKEN')
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 api_manager = shape_sdk.api_manager.ApiManager()
@@ -43,7 +43,7 @@ async def clearTemp(state: FSMContext):
     messages: List[types.Message] = (await state.get_data()).get('temporary_messages', None)
     if not messages:
         return
-    
+
     for message in messages:
         try:
             await message.delete()
@@ -58,11 +58,12 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await state.clear()
 
     aiogram_user = message.from_user
-    user = await shape_sdk.user.getUser(aiogram_user.id)  # Получаем юзера из апи
+    # Получаем юзера из апи
+    user = await shape_sdk.user.getUser(aiogram_user.id)
     if not user:
         """Если юзера нет, отправляем запрос на его создание"""
         await shape_sdk.user.createUser(
-            aiogram_user.id, 
+            aiogram_user.id,
             aiogram_user.first_name or 'first',
             aiogram_user.last_name or 'last',
             aiogram_user.username
@@ -89,7 +90,11 @@ async def catalog(callback: types.CallbackQuery):
 
     products = await shape_sdk.products.getProducts(callback.from_user.id) or []
     await callback.message.edit_media(
-        media=InputMediaPhoto(media=FSInputFile("./static/catalog.png"), caption="Каталог 📚", parse_mode="Markdown"),
+        media=InputMediaPhoto(
+            media=FSInputFile("./static/catalog.png"),
+            caption="Каталог 📚",
+            parse_mode="Markdown"
+        ),
         reply_markup=keyboards.buildProductsMain(products)
     )
 
@@ -100,7 +105,11 @@ async def keyboard_skins(callback: types.CallbackQuery):
 
     products = await shape_sdk.products.getProducts(callback.from_user.id) or []
     await callback.message.edit_media(
-        media=InputMediaPhoto(media=FSInputFile("./static/catalog.png"), caption="Скины 📚", parse_mode="Markdown"),
+        media=InputMediaPhoto(
+            media=FSInputFile("./static/catalog.png"),
+            caption="Скины 📚",
+            parse_mode="Markdown"
+        ),
         reply_markup=keyboards.buildProductsSkinsMain(products)
     )
 
@@ -110,7 +119,11 @@ async def main_menu(callback: types.CallbackQuery):
     """Хендлер колбека кнопки Главного меню"""
 
     await callback.message.edit_media(
-        media=InputMediaPhoto(media=FSInputFile("./static/hello.jpg"), caption=texts.buildStartText(callback.from_user.full_name), parse_mode="Markdown"),
+        media=InputMediaPhoto(
+            media=FSInputFile("./static/hello.jpg"),
+            caption=texts.buildStartText(callback.from_user.full_name),
+            parse_mode="Markdown"
+        ),
         reply_markup=keyboards.buildStartKeyboard()
     )
 
@@ -136,23 +149,25 @@ async def orders(callback: types.CallbackQuery, state: FSMContext):
 
     orders = await shape_sdk.orders.getOrders(callback.from_user.id)
     await clearTemp(state)
-        
+
     if orders == None:
         await callback.answer(text='⚠️ Не удалось получить список заказов!')
         return
-    
+
     if len(orders) == 0:
         await callback.answer(text='У вас еще нет заказов')
         return
-    
+
     await callback.answer()
     temporary_messages = []
     for order in orders:
-        temporary_messages.append(await callback.message.answer(
+        message = await callback.message.answer(
             text=texts.buildOrderText(order),
             reply_markup=keyboards.buildOrderKeyboard(order)
-        ))
-    await state.update_data(temporary_messages=temporary_messages)  # Записываем временные заказы в FSM
+        )
+        temporary_messages.append(message)
+    # Записываем временные заказы в FSM
+    await state.update_data(temporary_messages=temporary_messages)
 
 
 @dp.callback_query(F.data.startswith("order_expand_"))
@@ -161,8 +176,10 @@ async def moreOrder(callback: types.CallbackQuery):
 
     state, order_id = callback.data.replace("order_expand_", "").split('_')
     order = await shape_sdk.orders.getOrder(callback.from_user.id, order_id)
-    text = texts.buildOrderText(order) if state == 'less' else texts.buildOrderTextMore(order)
-    keyboard = keyboards.buildOrderKeyboard(order) if state == 'less' else keyboards.buildOrderKeyboardMore(order)
+    text = texts.buildOrderText(
+        order) if state == 'less' else texts.buildOrderTextMore(order)
+    keyboard = keyboards.buildOrderKeyboard(
+        order) if state == 'less' else keyboards.buildOrderKeyboardMore(order)
     await callback.message.edit_text(
         text=text,
         reply_markup=keyboard,
@@ -190,11 +207,11 @@ async def checkPayment(callback: types.CallbackQuery, state: FSMContext):
     if not order:
         await callback.answer('⚠️ Не удалось проверить статус оплаты')
         return
-    
+
     if order.status == 'awaiting_payment':
         await callback.message.answer(texts.buildPaymentErrorText())
         return
-    
+
     await callback.message.edit_text(
         text=texts.buildOrderTextMore(order),
         reply_markup=keyboards.buildOrderKeyboardMore(order),
@@ -215,7 +232,8 @@ async def orderProduct(callback: types.CallbackQuery, state: FSMContext):
     """
 
     nominal_id = callback.data.replace("orderProduct_", "")
-    _session: OrderSession | None = (await state.get_data()).get('session', None)  # Проверяем существование запущенного потока заказа
+    # Проверяем существование запущенного потока заказа
+    _session: OrderSession | None = (await state.get_data()).get('session', None)
     await clearTemp(state)
 
     if _session:
@@ -227,7 +245,8 @@ async def orderProduct(callback: types.CallbackQuery, state: FSMContext):
         await callback.answer('⚠️ Произошла ошибка при заказе товара! Перезагрузите бота или попробуйте позже')
         return
 
-    await state.update_data(session=OrderSession(product.id, product.nominal_id))  # Создаем и записываем новый объект временных данных для пользователя
+    # Создаем и записываем новый объект временных данных для пользователя
+    await state.update_data(session=OrderSession(product.id, product.nominal_id))
 
     if nominal_id in ['skin64', 'skin_premium']:
         """Если продуктом является скин — переходим к этапу выбора рук"""
@@ -244,7 +263,7 @@ async def selectHands(callback: types.CallbackQuery, state: FSMContext):
     if not _session:
         await callback.message.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
         return
-    
+
     await callback.message.answer(
         text='💠 Выберите тип рук вашего скина',
         reply_markup=keyboards.buildHandsKeyboard()
@@ -263,13 +282,13 @@ async def inputParams(callback: types.CallbackQuery, state: FSMContext):
     if not _session:
         await callback.message.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
         return
-    
+
     if callback.data.startswith('hands_'):
         """
         Если функция была вызвана колбеком с кнопок выбора рук - записываем
         параметр рук в объект временных данных
         """
-    
+
         message = await callback.message.edit_text(
             text=texts.buildInputsText(),
             reply_markup=keyboards.buildInputsKeyboard(),
@@ -288,8 +307,10 @@ async def inputParams(callback: types.CallbackQuery, state: FSMContext):
             parse_mode='Markdown'
         )
 
-    await state.set_state(States.params_waiting)  # Устанавливаем FSM в состояние ожидания параметров
-    await state.update_data(inputs_message=message)  # Запоминаем сообщение об отправке описания заказа на будущее
+    # Устанавливаем FSM в состояние ожидания параметров
+    await state.set_state(States.params_waiting)
+    # Запоминаем сообщение об отправке описания заказа на будущее
+    await state.update_data(inputs_message=message)
 
 
 @dp.message(States.params_waiting)
@@ -301,7 +322,7 @@ async def handleParams(message: types.Message, state: FSMContext):
     if not _session:
         await message.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
         return
-    
+
     if message.photo:
         """Если сообщение - фото (далее по аналогии)"""
 
@@ -338,13 +359,13 @@ async def handleParams(message: types.Message, state: FSMContext):
         """Если тип сообщения не подходит ко всем вышеперечисленным - пытаемся достать оттуда текст"""
 
         if message.text:
-           _session.descriptions.append(message.text)
+            _session.descriptions.append(message.text)
 
     if inputs_message:
         try:
             await inputs_message.edit_text(
-                text=texts.buildInputsText() + \
-                    f'\n\nКоличество вложений: *{len(_session.attachments)}*',
+                text=texts.buildInputsText() +
+                f'\n\nКоличество вложений: *{len(_session.attachments)}*',
                 reply_markup=inputs_message.reply_markup,
                 parse_mode='Markdown'
             )
@@ -360,7 +381,7 @@ async def inputsDone(callback: types.CallbackQuery, state: FSMContext):
     if not _session:
         await callback.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
         return
-    
+
     """Собираем все данные для АПИ"""
     descriptions = ' '.join(_session.descriptions)
     _session.parameters.append({
@@ -370,7 +391,7 @@ async def inputsDone(callback: types.CallbackQuery, state: FSMContext):
     if not descriptions:
         await callback.message.answer('Отправьте хотя бы одно сообщение с описанием заказа!')
         return
-    
+
     if not _session.attachments:
         await callback.answer()
         await callback.message.answer(
@@ -406,19 +427,18 @@ async def createOrder(callback: types.CallbackQuery, state: FSMContext):
         callback.from_user.id,
         _session.product_id,
         _session.parameters,
-        _session.attachments                   
+        _session.attachments
     )
 
     if response != 200:
         await callback.message.answer('⚠️ Не удалось создать заказ')
         return
 
-    
     orders = await shape_sdk.orders.getOrders(callback.from_user.id)
     if not orders:
         await callback.message.answer('⚠️ Произошла ошибка при создании ссылки для оплаты!')
         return
-    
+
     """
     ⚠️Важная пометка⚠️
     АПИ не возвращает id только что созданного заказа,
@@ -452,8 +472,8 @@ async def handlePromocodeText(message: types.Message, state: FSMContext):
     if not promocode:
         await message.answer('Такого промокода нет!')
         return
-    
-    try: 
+
+    try:
         await promocode_message.edit_text(
             text=texts.buildPromocodeInfoText(promocode),
             reply_markup=keyboards.buildPromocodeAcceptKeyboard(promocode.id),
@@ -477,7 +497,7 @@ async def promocode(callback: types.CallbackQuery, state: FSMContext):
     if not order_id:
         await callback.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
         return
-    
+
     code = await shape_sdk.orders.usePromocode(callback.from_user.id, order_id, promocode_id)
     if code != 200:
         if code == 404:
@@ -527,14 +547,15 @@ async def handleEmail(message: types.Message, state: FSMContext):
         email_info = validate_email(message.text)  # Валидируем почту
         result = await shape_sdk.user.setEmail(message.from_user.id, email_info.normalized)
         if not result:
-            await message.answer('⚠️ Не удалось установить адрес электронной почты\n' + \
+            await message.answer('⚠️ Не удалось установить адрес электронной почты\n' +
                                  'Не используйте адрес электронной почты, которую ранее указывали в нашем ВК боте')
             return
         await state.set_state(state=None)
-        await createPayment(message.from_user.id, message, state)  # Возвращаемся к самому началу диалога оплаты
+        # Возвращаемся к самому началу диалога оплаты
+        await createPayment(message.from_user.id, message, state)
     except EmailNotValidError:
         """Если валидация не пошла"""
-    
+
         await message.answer('Ваш адрес электронной почты имеет неправильный формат!')
 
 
@@ -547,7 +568,7 @@ async def confirmOrder(callback: types.CallbackQuery):
     if status_code != 200:
         await callback.answer('⚠️ Не удалось подтвердить заказ')
         return
-    
+
     order = await shape_sdk.orders.getOrder(callback.from_user.id, order_id)
     await callback.message.edit_text(
         text=texts.buildOrderTextMore(order),
@@ -580,13 +601,13 @@ async def viewResult(callback: types.CallbackQuery, state: FSMContext):
     if not results:
         await callback.answer('⚠️ Не удалось получить результат')
         return
-    
+
     for result in results:
         data = await api_manager.getResultPhoto(result.s3url)
         if not data:
             await callback.message.answer('⚠️ Не удалось получить результат!')
             return
-        
+
         message_temp = await callback.message.answer_document(
             document=types.BufferedInputFile(file=data, filename="result.png"),
             parse_mode='Markdown'
@@ -613,7 +634,8 @@ async def addCorrections(callback: types.CallbackQuery, state: FSMContext):
     различия только в кнопках 'Подтвердить', которые относят к разным колбекам
     """
     await state.update_data(inputs_message=message, session=OrderSession(-1, -1))
-    await state.set_state(States.params_waiting)  # Запускаем поток ввода описания
+    # Запускаем поток ввода описания
+    await state.set_state(States.params_waiting)
 
 
 @dp.callback_query(F.data.startswith("correction_done_"))
@@ -626,17 +648,17 @@ async def correctionsFinish(callback: types.CallbackQuery, state: FSMContext):
     if not _session:
         await callback.message.answer('Не удалось найти заказ! Отправьте /start что бы начать заново')
         return
-    
+
     order = await shape_sdk.orders.getOrder(callback.from_user.id, order_id)
     if not order:
         await callback.answer('⚠️ Не удалось получить заказ для исправления')
         return
-    
+
     descriptions = ' '.join(_session.descriptions)
     if not descriptions:
         await callback.message.answer('Отправьте хотя бы одно сообщение с описанием исправления!')
         return
-    
+
     code = await shape_sdk.orders.createCorrection(
         callback.from_user.id,
         int(order_id),
@@ -647,7 +669,7 @@ async def correctionsFinish(callback: types.CallbackQuery, state: FSMContext):
     if code != 200:
         await callback.answer('⚠️ Не удалось создать исправление!')
         return
-    
+
     await callback.message.answer('Запрос на исправление заказа успешно отправлен!')
 
 

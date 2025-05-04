@@ -28,14 +28,14 @@ async def confirmOrder(user_id: int, order_id: str) -> int:
     return status
 
 
-async def getOrder(user_id: int, order_id: str) -> OrderType | None: 
+async def getOrder(user_id: int, order_id: str) -> OrderType | None:
     """Get order by id"""
 
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}', user_id)
     products = await getProducts(user_id)
     if status != 200 or not products:
         return None
-    
+
     return OrderType(products, **body)
 
 
@@ -57,7 +57,7 @@ async def getCorrections(user_id: int, order_id: int) -> List[CorrectionType] | 
 
     if status != 200:
         return None
-    
+
     return list(map(lambda order: CorrectionType(**order), body))
 
 
@@ -81,7 +81,7 @@ async def correctionHandler(user_id: int, correction_id: int) -> CorrectionType 
     body, status = await apiManager.send_request(f'/bot/corrections/{correction_id}', user_id)
     if status != 200:
         return None
-    
+
     return CorrectionType(**body)
 
 
@@ -91,7 +91,7 @@ async def getResult(user_id: int, order_id: int) -> List[OrderResultType] | None
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/result', user_id)
     if status != 200:
         return None
-    
+
     return list(map(lambda order: OrderResultType(**order), body))
 
 
@@ -101,7 +101,7 @@ async def createPayment(user_id: int, order_id: int) -> PaymentHandler | None:
     body, status = await apiManager.send_request(f'/bot/orders/{order_id}/payment/create', user_id)
     if status != 200:
         return None
-    
+
     return PaymentHandler(**body)
 
 
@@ -112,21 +112,21 @@ async def checkPayment(user_id: int, order_id: int) -> OrderType | None:
     products = await getProducts(user_id)
     if status != 200:
         return None
-    
+
     return OrderType(products, **body)
 
 
-async def getPromocode(user_id: int, promocode_id: str) -> PromocodeType | None: 
+async def getPromocode(user_id: int, promocode_id: str) -> PromocodeType | None:
     """Get promocode by id"""
 
     body, status = await apiManager.send_request(f'/bot/promocodes/{promocode_id}', user_id)
     if status != 200:
         return None
-    
+
     return PromocodeType(**body)
 
 
-async def usePromocode(user_id: int, order_id: str, promocode_id: str) -> bool: 
+async def usePromocode(user_id: int, order_id: str, promocode_id: str) -> bool:
     """Use promocode in order"""
 
     _, status = await apiManager.send_request(f'/bot/orders/{order_id}/promocode?id={promocode_id}', user_id, method='POST')

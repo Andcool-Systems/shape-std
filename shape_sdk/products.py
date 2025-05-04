@@ -11,7 +11,7 @@ async def getProducts(user_id: int) -> List[ProductType] | None:
     body, status = await apiManager.send_request('/bot/products', user_id)
     if status != 200:
         return None
-    
+
     return list(map(lambda product: ProductType(**product), body))
 
 

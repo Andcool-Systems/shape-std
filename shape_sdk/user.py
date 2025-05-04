@@ -8,7 +8,7 @@ async def getUser(user_id: int) -> UserType | None:
     body, status = await apiManager.send_request('/bot/users', user_id)
     if status != 200:
         return None
-    
+
     return UserType(**body)
 
 

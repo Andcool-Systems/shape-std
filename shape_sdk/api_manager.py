@@ -2,6 +2,7 @@ import os
 import aiohttp
 import orjson
 
+
 class ApiManager:
     def __init__(self):
         self.headers = {
@@ -31,9 +32,9 @@ class ApiManager:
                     print(response_data)
                 return response_data, response.status
         except Exception as e:
-            print('API exception has ocurred:', e)
+            print('API exception has occurred:', e)
             return None, 502
-        
+
     async def getResultPhoto(self, url: str):
         """Do image request to API"""
 
